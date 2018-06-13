@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Motion Control Pass Statistics
+Motion Control Pass Information
 
 The only argument is a folder which should contain sequential frames with a
 number at the end. The times are taken from the file timestamps, and the
