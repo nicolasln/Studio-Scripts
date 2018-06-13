@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Reverse video files
+
+for i in {1..58}; do
+  INPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/ULTIMATE EYE/Shot 4/ProRes/UE-S4-$(printf %03d $i).mov"
+  OUTPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/ULTIMATE EYE/Shot 4/ProRes Reversed/UE-S4-$(printf %03d $i) Reversed.mov"
+  ffmpeg -i "$INPUT" -vf reverse -vcodec prores_ks -pix_fmt yuva444p10le -profile:v 4444 "$OUTPUT"
+done
+
+for i in {1..64}; do
+  INPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/DEEP HYDRATING/Shot 4/ProRes/HE-S4-$i.mov"
+  OUTPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/DEEP HYDRATING/Shot 4/ProRes Reversed/HE-S4-$i Reversed.mov"
+  ffmpeg -i "$INPUT" -vf reverse -vcodec prores_ks -pix_fmt yuva444p10le -profile:v 4444 "$OUTPUT"
+done
+
+for i in {73..76}; do
+  INPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/DEEP HYDRATING/Shot 4/ProRes/CAP ONLY S6-0$i.mov"
+  OUTPUT="/Volumes/Vostok/2018-05-14 Olay/RAW FOOTAGE/EYE/DEEP HYDRATING/Shot 4/ProRes Reversed/CAP ONLY S6-0$i Reversed.mov"
+  ffmpeg -i "$INPUT" -vf reverse -vcodec prores_ks -pix_fmt yuva444p10le -profile:v 4444 "$OUTPUT"
+done

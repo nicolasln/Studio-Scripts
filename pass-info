@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+"""
+Motion Control Pass Statistics
+
+The only argument is a folder which should contain sequential frames with a
+number at the end. The times are taken from the file timestamps, and the
+total number of frames are calculated from the filenames, so partial passes
+*should* work (in theory).
+
+The slow mode fps is a conversion for the 'Robot Slow' mode on Flair 5.4, which
+runs 6x slower than regular programmed speed. Untested on Flair 6.
+
+Usage:
+    pass-timer <folder>
+
+Options:
+    -h -? --help    Show this screen.
+    -v --version    Show version.
+"""
+
+import os
+import time
+import re
+from datetime import timedelta
+from docpie import docpie
+from blessings import Terminal
+
+version = (2,0)
+
+def human_delta(tdelta):
+    """
+    Takes a timedelta object and formats it for humans.
+    Usage:
+        # 149 day(s) 8 hr(s) 36 min 19 sec
+        print human_delta(datetime(2014, 3, 30) - datetime.now())
+    Example Results:
+        23 sec
+        12 min 45 sec
+        1 hr(s) 11 min 2 sec
+        3 day(s) 13 hr(s) 56 min 34 sec
+    :param tdelta: The timedelta object.
+    :return: The human formatted timedelta
+    """
+    d = dict(days=tdelta.days)
+    d['hrs'], rem = divmod(tdelta.seconds, 3600)
+    d['min'], d['sec'] = divmod(rem, 60)
+
+    if d['min'] is 0:
+        fmt = '{sec} sec'
+    elif d['hrs'] is 0:
+        fmt = '{min} min {sec} sec'
+    elif d['days'] is 0:
+        fmt = '{hrs} hr(s) {min} min {sec} sec'
+    else:
+        fmt = '{days} day(s) {hrs} hr(s) {min} min {sec} sec'
+
+    return fmt.format(**d)
+
+args = docpie(__doc__, version=version)
+path = os.path.abspath(args['<folder>'])
+
+style = Terminal()
+
+# Get the file list from path
+files = [f for f in os.scandir(path) if f.is_file() and not f.name.startswith('.')]
+files = sorted(files, key=os.path.getmtime)
+
+# Find oldest and newest files info
+oldest = files[0]
+oldest_time = oldest.stat().st_mtime
+oldest_frame = int(re.match('.*?([0-9]+)$', os.path.splitext(oldest)[0]).group(1))
+newest = files[-1]
+newest_time = newest.stat().st_mtime
+newest_frame = int(re.match('.*?([0-9]+)$', os.path.splitext(newest)[0]).group(1))
+frames = newest_frame - oldest_frame + 1
+
+# Calculate time delta
+pass_time = newest_time - oldest_time
+pass_time_pretty = human_delta(timedelta(seconds=pass_time))
+
+# FPS
+fps = frames / pass_time
+fps_robot_slow = fps * 6
+spf = pass_time / frames
+
+print('{s.yellow}{0}{s.normal} --> {s.yellow}{1}{s.normal}  |  '
+      '{s.yellow}{2}{s.normal} --> {s.yellow}{3}{s.normal}'.format(
+            oldest.name,
+            newest.name,
+            time.ctime(oldest_time),
+            time.ctime(newest_time),
+            s=style))
+
+print('{s.yellow}{0}{s.normal} frames  |  '
+      '{s.yellow}{1}{s.normal}  |  '
+      '{s.yellow}{2:.3f}{s.normal} frames per second  |  '
+      '{s.yellow}{3:.3f}{s.normal} seconds per frame'.format(
+            frames,
+            pass_time_pretty,
+            fps,
+            spf,
+            s=style))
+
+print('Converts to {s.yellow}{:.3f}{s.normal} fps in {s.yellow}robot slow{s.normal} mode'.format(
+    fps_robot_slow,
+    s=style))
+
+print('Converts to {s.yellow}{}{s.normal} frames at {s.yellow}1 fps{s.normal}'.format(
+    frames * spf,
+    s=style))

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Convert passes to 1080p on long side prores
+
+for i in {1..17}; do
+  ffmpeg -framerate 24 -i "/Volumes/Vostok/2016-08-02 Zegna/Film/S6/T3/P$i/S6-T3-P$i-%03d.JPG" -vf scale=1920:-1 -codec:v prores_ks -profile:v 2 ~/desktop/P$i.mov
+done

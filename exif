@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+"""
+Prints EXIF data for an image file. Couldn't be any simpler.
+
+Usage:
+    exif <file>
+
+Options:
+    -h -? --help    Show this screen.
+    -v --version    Show version.
+"""
+
+import os
+import time
+import exifread
+from datetime import timedelta
+from docpie import docpie
+
+# Constants
+version = "0.1"
+
+# Grab some info
+args = docpie(__doc__, version=version)
+path = os.path.abspath(args['<file>'])
+
+with open(path, 'rb') as file:
+    keys = exifread.process_file(file)
+    for key in keys:
+        if 'EXIF' in key and not key in ('EXIF MakerNote','EXIF UserComment'):
+            print('Key: {:30}      Value: {}'.format(key, keys[key]))

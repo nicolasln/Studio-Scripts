@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+import sys,serial,time
+
+fps = 5         # On-Off cycles per second
+duration = 5    # Duration in seconds
+relayName = '/dev/tty.usbmodem14241'
+
+delay = 1 / (fps * 2)
+repeat = fps * duration
+
+with serial.Serial(relayName, 19200, timeout=1) as relay:
+    while repeat > 0:
+        relay.write('relay on 0\n\r'.encode('utf-8'))
+        time.sleep(delay)
+        relay.write('relay off 0\n\r'.encode('utf-8'))
+        time.sleep(delay)
+        repeat -= 1
