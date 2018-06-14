@@ -1,6 +1,6 @@
 # Studio Scripts
 
-Most of the pyhton scripts have usage and options info if run without any arguments.
+The scripts have usage and options info when run without any arguments. Check for dependencies directly in the scripts or just try to run and see what happens!
 
 
 ### exif
