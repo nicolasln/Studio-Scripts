@@ -6,10 +6,10 @@ Motion Control Pass Information
 The only argument is a folder which should contain sequential frames with a
 number at the end. The times are taken from the file timestamps, and the
 total number of frames are calculated from the filenames, so partial passes
-*should* work (in theory).
+should work.
 
 The slow mode fps is a conversion for the 'Robot Slow' mode on Flair 5.4, which
-runs 6x slower than regular programmed speed. Untested on Flair 6.
+runs 6x slower than regular programmed speed. Untested on Flair 6+.
 
 Usage:
     pass-timer <folder>
@@ -22,11 +22,10 @@ Options:
 import os
 import time
 import re
+import exifread
 from datetime import timedelta
 from docpie import docpie
 from blessings import Terminal
-
-version = (2,0)
 
 def human_delta(tdelta):
     """
@@ -57,10 +56,11 @@ def human_delta(tdelta):
 
     return fmt.format(**d)
 
-args = docpie(__doc__, version=version)
-path = os.path.abspath(args['<folder>'])
 
-style = Terminal()
+# ----- Logic -----
+
+args = docpie(__doc__, version=(3,0))
+path = os.path.abspath(args['<folder>'])
 
 # Get the file list from path
 files = [f for f in os.scandir(path) if f.is_file() and not f.name.startswith('.')]
@@ -82,30 +82,28 @@ pass_time_pretty = human_delta(timedelta(seconds=pass_time))
 # FPS
 fps = frames / pass_time
 fps_robot_slow = fps * 6
-spf = pass_time / frames
 
-print('{s.yellow}{0}{s.normal} --> {s.yellow}{1}{s.normal}  |  '
-      '{s.yellow}{2}{s.normal} --> {s.yellow}{3}{s.normal}'.format(
-            oldest.name,
-            newest.name,
-            time.ctime(oldest_time),
-            time.ctime(newest_time),
-            s=style))
+# EXIF
+with open(oldest, 'rb') as file:
+    metadata = exifread.process_file(file)
+    exposure = metadata['EXIF ExposureTime']
+    iso = metadata['EXIF ISOSpeedRatings']
+
+
+# ----- Output -----
+
+style = Terminal()
 
 print('{s.yellow}{0}{s.normal} frames  |  '
       '{s.yellow}{1}{s.normal}  |  '
       '{s.yellow}{2:.3f}{s.normal} frames per second  |  '
-      '{s.yellow}{3:.3f}{s.normal} seconds per frame'.format(
+      '{s.yellow}{3:.3f}{s.normal} fps robot slow mode  |  '
+      'Exposure: {s.yellow}{4}{s.normal}  |  '
+      'ISO: {s.yellow}{5}{s.normal}'.format(
             frames,
             pass_time_pretty,
             fps,
-            spf,
+            fps_robot_slow,
+            exposure,
+            iso,
             s=style))
-
-print('Converts to {s.yellow}{:.3f}{s.normal} fps in {s.yellow}robot slow{s.normal} mode'.format(
-    fps_robot_slow,
-    s=style))
-
-print('Converts to {s.yellow}{}{s.normal} frames at {s.yellow}1 fps{s.normal}'.format(
-    frames * spf,
-    s=style))
