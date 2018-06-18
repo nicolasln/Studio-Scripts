@@ -87,6 +87,9 @@ fps_robot_slow = fps * 6
 with open(oldest, 'rb') as file:
     metadata = exifread.process_file(file)
     exposure = metadata['EXIF ExposureTime']
+    exposure_decimal = eval(str(exposure))
+    if exposure_decimal > 1/4:
+        exposure = exposure_decimal
     iso = metadata['EXIF ISOSpeedRatings']
 
 
